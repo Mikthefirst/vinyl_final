@@ -2,8 +2,9 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtPayload } from '../interfaces/interfaces';
+import { JwtPayload, JwtPayloadFinal } from '../interfaces/interfaces';
 import { AuthService } from '../auth.service';
+import { UserRole } from '../enums/role.enum';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -24,8 +25,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             secretOrKey: secret
         });
     }
+
+    private mapToUserRole(role: string): UserRole {
+        switch (role) {
+            case 'admin':
+                return UserRole.ADMIN;
+            case 'user':
+                return UserRole.USER;
+            default:
+                return UserRole.USER; // throw new Error(`Invalid role: ${role}`)
+        }
+    }
     //записываем в req.user JwtPayload
-    async validate(payload: JwtPayload) {
+    async validate(payload: JwtPayload): Promise<JwtPayloadFinal> {
         const user = await this.authService.validateUserByID(payload.sub);
 
         if (!user) throw new UnauthorizedException('User no longer exists');
@@ -33,7 +45,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         return {
             userId: payload.sub,
             email: payload.email,
-            role: payload.role,
+            role: this.mapToUserRole(payload.role),
             firstName: user.first_name,
             lastName: user.last_name
         };

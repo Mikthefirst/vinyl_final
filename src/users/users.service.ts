@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User, UserRole } from './entity/user.entity';
+import { User } from './entity/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { GoogleUserData } from 'src/auth/interfaces/interfaces';
+import { UserRole } from 'src/auth/enums/role.enum';
 
 @Injectable()
 export class UsersService {

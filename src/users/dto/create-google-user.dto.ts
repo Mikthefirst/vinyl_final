@@ -1,4 +1,3 @@
-// users/dto/create-google-user.dto.ts
 import { IsEmail, IsString, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateGoogleUserDto {

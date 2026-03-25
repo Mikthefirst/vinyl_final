@@ -25,6 +25,7 @@ export class AuthController {
     googleCallback(@Request() req: interfaces.RequestWithUser, @Res() res) {
         const token = this.authService.login(req.user);
         console.log('token: ', token);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         res.redirect('http://localhost:3000');
     }
 }
