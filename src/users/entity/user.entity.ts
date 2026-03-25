@@ -39,6 +39,9 @@ export class User {
     @Column({ default: false })
     is_email_verified: boolean;
 
+    @Column({ nullable: true })
+    hashed_refresh_token: string;
+
     @Column({ type: 'timestamp', nullable: true })
     last_login_at: Date;
 

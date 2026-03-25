@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entity/user.entity';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { GoogleUserData } from 'src/auth/interfaces/interfaces';
@@ -71,6 +71,23 @@ export class UsersService {
 
     async findOneByID(id: string): Promise<User | null> {
         return this.userRepo.findOneBy({ id: id });
+    }
+
+    async updateRefreshToken(
+        userId: string,
+        hashed_refresh_token: string | undefined
+    ): Promise<UpdateResult> {
+        return await this.userRepo.update(
+            { id: userId },
+            { hashed_refresh_token: hashed_refresh_token }
+        );
+    }
+
+    async updateLastLogin(userId: string): Promise<UpdateResult> {
+        return await this.userRepo.update(
+            { id: userId },
+            { last_login_at: new Date() }
+        );
     }
     //private func
     private toUserProfileDto(user: User): UserProfileDto {

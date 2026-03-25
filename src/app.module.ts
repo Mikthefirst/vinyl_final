@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/entity/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { RefreshJwtModule } from './refresh-jwt/refresh-jwt.module';
 
 @Module({
     imports: [
@@ -30,7 +31,8 @@ import { AuthModule } from './auth/auth.module';
             inject: [ConfigService]
         }),
         UsersModule,
-        AuthModule
+        AuthModule,
+        RefreshJwtModule
     ]
 })
 export class AppModule {}
