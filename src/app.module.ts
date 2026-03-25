@@ -7,6 +7,7 @@ import { User } from './users/entity/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { RefreshJwtModule } from './refresh-jwt/refresh-jwt.module';
+import { StripeModule } from './stripe/stripe.module';
 
 @Module({
     imports: [
@@ -32,7 +33,8 @@ import { RefreshJwtModule } from './refresh-jwt/refresh-jwt.module';
         }),
         UsersModule,
         AuthModule,
-        RefreshJwtModule
+        RefreshJwtModule,
+        StripeModule
     ]
 })
 export class AppModule {}
