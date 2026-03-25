@@ -36,12 +36,13 @@ export class RefreshJwtStrategy extends PassportStrategy(
         payload: JwtPayload
     ): Promise<JwtPayloadFinal> {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        const refreshToken: string = req.body.refresh_token;
+        const refreshToken: string =
+            req.headers.authorization?.replace('Bearer', '').trim() || '';
         if (!refreshToken) {
             throw new UnauthorizedException('Refresh token is required');
         }
         const user = await this.authService.validateRefreshToken(
-            payload.sub,
+            payload.email,
             refreshToken
         );
         return {

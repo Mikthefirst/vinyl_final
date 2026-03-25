@@ -38,10 +38,12 @@ export class AuthService {
             role: user.role
         });
         const hashed_refresh_token = await bcrypt.hash(refresh_token, 8);
-        await this.userService.updateRefreshToken(
-            user.id,
+        const result = await this.userService.updateRefreshToken(
+            user.email,
             hashed_refresh_token
         );
+        console.log('updated user with refresh token:', result);
+        await this.userService.updateLastLogin(user.email);
         return {
             access_token: access_token,
             refresh_token: refresh_token
@@ -58,7 +60,7 @@ export class AuthService {
         });
         const hashed_refresh_token = await bcrypt.hash(refresh_token, 8);
         await this.userService.updateRefreshToken(
-            user.userId,
+            user.email,
             hashed_refresh_token
         );
         return {
@@ -84,10 +86,10 @@ export class AuthService {
     }
 
     async validateRefreshToken(
-        id: string,
+        email: string,
         refreshToken: string
     ): Promise<User> {
-        const user = await this.validateUserByID(id);
+        const user = await this.userService.findOneByEmail(email);
         if (!user) throw new UnauthorizedException('User no longer exists');
 
         if (!user.hashed_refresh_token)
@@ -104,7 +106,7 @@ export class AuthService {
         return user;
     }
 
-    async logOut(id: string) {
-        await this.userService.updateRefreshToken(id, undefined);
+    async logOut(email: string) {
+        await this.userService.updateRefreshToken(email, '');
     }
 }

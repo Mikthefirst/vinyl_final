@@ -74,19 +74,22 @@ export class UsersService {
     }
 
     async updateRefreshToken(
-        userId: string,
-        hashed_refresh_token: string | undefined
+        email: string,
+        hashed_refresh_token: string
     ): Promise<UpdateResult> {
+        const user = await this.findOneByEmail(email);
+        if (!user) throw new BadRequestException('User not found');
+
         return await this.userRepo.update(
-            { id: userId },
+            { email: email },
             { hashed_refresh_token: hashed_refresh_token }
         );
     }
 
-    async updateLastLogin(userId: string): Promise<UpdateResult> {
-        return await this.userRepo.update(
-            { id: userId },
-            { last_login_at: new Date() }
+    async updateLastLogin(email: string) {
+        await this.userRepo.update(
+            { email: email },
+            { last_login_at: () => 'CURRENT_TIMESTAMP' }
         );
     }
     //private func
