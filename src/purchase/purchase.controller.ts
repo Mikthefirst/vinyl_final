@@ -12,6 +12,14 @@ import {
 import { PurchaseService } from './purchase.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Request } from 'express';
+import {
+    ApiTags,
+    ApiOperation,
+    ApiResponse,
+    ApiBearerAuth,
+    ApiQuery,
+    ApiParam
+} from '@nestjs/swagger';
 
 interface RequestWithUser extends Request {
     user: {
@@ -20,11 +28,27 @@ interface RequestWithUser extends Request {
     };
 }
 
+@ApiTags('purchases')
 @Controller('purchase')
 export class PurchaseController {
     constructor(private readonly purchasesService: PurchaseService) {}
 
     @Get('success')
+    @ApiOperation({ summary: 'Handle successful payment callback' })
+    @ApiQuery({ name: 'userId', required: true, description: 'User ID' })
+    @ApiQuery({ name: 'vinyl_id', required: true, description: 'Vinyl ID' })
+    @ApiQuery({
+        name: 'quantity',
+        required: true,
+        description: 'Quantity purchased'
+    })
+    @ApiQuery({
+        name: 'session_id',
+        required: true,
+        description: 'Stripe session ID'
+    })
+    @ApiResponse({ status: 200, description: 'Payment processed successfully' })
+    @ApiResponse({ status: 400, description: 'Payment error' })
     async handleSuccess(
         @Query('userId') userId: string,
         @Query('vinyl_id') vinylId: string,
@@ -51,6 +75,21 @@ export class PurchaseController {
     }
 
     @Get('cancel')
+    @ApiOperation({ summary: 'Handle canceled payment callback' })
+    @ApiQuery({ name: 'userId', required: true, description: 'User ID' })
+    @ApiQuery({ name: 'vinyl_id', required: true, description: 'Vinyl ID' })
+    @ApiQuery({
+        name: 'quantity',
+        required: true,
+        description: 'Quantity purchased'
+    })
+    @ApiQuery({
+        name: 'session_id',
+        required: true,
+        description: 'Stripe session ID'
+    })
+    @ApiResponse({ status: 200, description: 'Payment canceled' })
+    @ApiResponse({ status: 400, description: 'Payment error' })
     async handleCancel(
         @Query('userId') userId: string,
         @Query('vinyl_id') vinylId: string,
@@ -75,6 +114,22 @@ export class PurchaseController {
     }
 
     @Get('my-purchases')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get user purchases' })
+    @ApiQuery({
+        name: 'page',
+        required: false,
+        description: 'Page number',
+        example: 1
+    })
+    @ApiQuery({
+        name: 'limit',
+        required: false,
+        description: 'Items per page',
+        example: 10
+    })
+    @ApiResponse({ status: 200, description: 'Returns list of purchases' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
     @UseGuards(JwtAuthGuard)
     async getUserPurchases(
         @Req() req: RequestWithUser,
@@ -89,6 +144,16 @@ export class PurchaseController {
     }
 
     @Get(':id')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get purchase by ID' })
+    @ApiParam({
+        name: 'id',
+        description: 'Purchase UUID',
+        example: '123e4567-e89b-12d3-a456-426614174000'
+    })
+    @ApiResponse({ status: 200, description: 'Returns purchase details' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 404, description: 'Purchase not found' })
     @UseGuards(JwtAuthGuard)
     async getPurchase(
         @Req() req: RequestWithUser,
@@ -106,6 +171,15 @@ export class PurchaseController {
 
     @Get('check/:vinylId')
     @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Check if user purchased vinyl' })
+    @ApiParam({
+        name: 'vinylId',
+        description: 'Vinyl UUID',
+        example: '123e4567-e89b-12d3-a456-426614174000'
+    })
+    @ApiResponse({ status: 200, description: 'Returns purchase status' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
     async checkPurchase(
         @Req() req: RequestWithUser,
         @Param(
