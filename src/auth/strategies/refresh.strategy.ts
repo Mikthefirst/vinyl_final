@@ -35,7 +35,6 @@ export class RefreshJwtStrategy extends PassportStrategy(
         req: Request,
         payload: JwtPayload
     ): Promise<JwtPayloadFinal> {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const refreshToken: string =
             req.headers.authorization?.replace('Bearer', '').trim() || '';
         if (!refreshToken) {

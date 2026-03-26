@@ -22,13 +22,17 @@ export class StripeService {
         userId: string
     ) {
         try {
-            const successUrl = `http://localhost:3000/purchase/success?userId=${encodeURIComponent(
+            const appUrl =
+                this.configService.get<string>('APP_URL') ||
+                'http://localhost:3000';
+
+            const successUrl = `${appUrl}/purchase/success?userId=${encodeURIComponent(
                 userId
             )}&vinyl_id=${encodeURIComponent(
                 createStripeDto.vinyl_id
             )}&quantity=${encodeURIComponent(createStripeDto.quantity)}&session_id={CHECKOUT_SESSION_ID}`;
 
-            const cancelUrl = `http://localhost:3000/purchase/cancel?userId=${encodeURIComponent(
+            const cancelUrl = `${appUrl}/purchase/cancel?userId=${encodeURIComponent(
                 userId
             )}&vinyl_id=${encodeURIComponent(
                 createStripeDto.vinyl_id

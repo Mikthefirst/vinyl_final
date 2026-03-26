@@ -2,7 +2,6 @@ import {
     Controller,
     Get,
     Request,
-    Res,
     UseGuards,
     Post,
     HttpCode,
@@ -46,17 +45,14 @@ export class AuthController {
     @UseGuards(GoogleAuthGuard)
     @Get('google/callback')
     @ApiOperation({ summary: 'Google OAuth callback' })
-    @ApiResponse({ status: 302, description: 'Redirects with tokens' })
-    async googleCallback(
-        @Request() req: interfaces.RequestWithUser,
-        @Res() res
-    ) {
+    @ApiResponse({ status: 302, description: 'Returns tokens' })
+    async googleCallback(@Request() req: interfaces.RequestWithUser) {
         const token = await this.authService.login(req.user);
         console.log('token: ', token);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-        return res.redirect(
-            `http://localhost:3000?access_token=${token.access_token}&refresh_token=${token.refresh_token}`
-        );
+        return {
+            access_token: token.access_token,
+            refresh_token: token.refresh_token
+        };
     }
 
     @UseGuards(RefreshAuthGuard)
