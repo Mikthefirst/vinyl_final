@@ -6,9 +6,15 @@ import { PurchaseController } from './purchase.controller';
 import { Purchase } from './entities/purchase.entity';
 import { StripeModule } from '../stripe/stripe.module';
 import { VinylsModule } from 'src/vinyls/vinyls.module';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Purchase]), StripeModule, VinylsModule],
+    imports: [
+        TypeOrmModule.forFeature([Purchase]),
+        StripeModule,
+        VinylsModule,
+        UsersModule
+    ],
     controllers: [PurchaseController],
     providers: [PurchaseService],
     exports: [PurchaseService]

@@ -9,6 +9,8 @@ import { Repository } from 'typeorm';
 import { Purchase } from './entities/purchase.entity';
 import { StripeService } from '../stripe/stripe.service';
 import { VinylService } from 'src/vinyls/vinyls.service';
+import { sendProfileUpdateMail } from 'src/utils/mailer';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class PurchaseService {
@@ -16,7 +18,8 @@ export class PurchaseService {
         @InjectRepository(Purchase)
         private purchasesRepository: Repository<Purchase>,
         private stripeService: StripeService,
-        private vinylsServ: VinylService
+        private vinylsServ: VinylService,
+        private usersService: UsersService
     ) {}
 
     async createPurchase(
@@ -76,6 +79,17 @@ export class PurchaseService {
                 paymentStatus: session.payment_status
             }
         });
+
+        const user = await this.usersService.findOneByID(userId);
+        if (!user) throw new BadRequestException('User not found');
+
+        const userText = `Your payment for "${vinyl.name}" has been successfully processed.\n\nPurchase Details:\n- Vinyl: ${vinyl.name} by ${vinyl.authorName}\n- Quantity: ${quantity}\n- Amount: ${purchase.amount} ${purchase.currency.toUpperCase()}\n\nThank you for your purchase!\n\n`;
+
+        await sendProfileUpdateMail(
+            user.email,
+            'Payment Successful - Vinyl Purchase Confirmation',
+            userText
+        );
 
         const savedPurchase = await this.purchasesRepository.save(purchase);
         return savedPurchase;
