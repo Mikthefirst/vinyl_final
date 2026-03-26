@@ -40,7 +40,8 @@ export class StripeService {
 
     async confirmPayment(paymentIntentId: string) {
         try {
-            const paymentIntent = await this.stripe.paymentIntents.confirm(paymentIntentId);
+            const paymentIntent =
+                await this.stripe.paymentIntents.confirm(paymentIntentId);
             return {
                 id: paymentIntent.id,
                 status: paymentIntent.status,
@@ -65,7 +66,7 @@ export class StripeService {
         try {
             const customer = await this.stripe.customers.create({
                 email,
-                name,
+                name
             });
             return customer;
         } catch (error) {
@@ -81,12 +82,12 @@ export class StripeService {
                 line_items: [
                     {
                         price: priceId,
-                        quantity: 1,
-                    },
+                        quantity: 1
+                    }
                 ],
                 customer: customerId,
                 success_url: 'http://localhost:3000/success',
-                cancel_url: 'http://localhost:3000/cancel',
+                cancel_url: 'http://localhost:3000/cancel'
             });
             return session;
         } catch (error) {

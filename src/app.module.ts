@@ -8,6 +8,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { RefreshJwtModule } from './refresh-jwt/refresh-jwt.module';
 import { StripeModule } from './stripe/stripe.module';
+import { VinylsModule } from './vinyls/vinyls.module';
+import { Vinyl } from './vinyls/entities/vinyl.entity';
 
 @Module({
     imports: [
@@ -24,7 +26,7 @@ import { StripeModule } from './stripe/stripe.module';
                 username: configService.get('POSTGRES_USER'),
                 password: configService.get('POSTGRES_PASSWORD'),
                 database: configService.get('POSTGRES_DB'),
-                entities: [User],
+                entities: [User, Vinyl],
                 synchronize: true,
                 logging: true,
                 maxQueryExecutionTime: 100
@@ -34,7 +36,8 @@ import { StripeModule } from './stripe/stripe.module';
         UsersModule,
         AuthModule,
         RefreshJwtModule,
-        StripeModule
+        StripeModule,
+        VinylsModule
     ]
 })
 export class AppModule {}

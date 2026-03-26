@@ -1,0 +1,251 @@
+### Переменные
+
+@baseUrl = http://localhost:3000
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1paGFpbGxlamtpbmQ0N0BnbWFpbC5jb20iLCJzdWIiOiIzYzZmOTU3ZS1kMmNjLTRhMDEtODQxMy1mNmRiOGE3OWY5ZTYiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzQ1MDk1MTksImV4cCI6MTc3NDUxMzExOX0.diAyMFmWZoxGj1jYsQdC1puS1dbxLe4cF3-q-ncqwMA
+
+@refresh_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1paGFpbGxlamtpbmQ0N0BnbWFpbC5jb20iLCJpYXQiOjE3NzQ1MDk0MjgsImV4cCI6MTc3NDU5NTgyOH0.jnm4niA6U27jY0cfdkls3BXSr3S4EbvGOypApxM4Mpw
+### ============================================
+### VINYL TESTS
+### ============================================
+
+@vinylId=f3586b07-821a-44da-b702-834b7e39a004
+
+### 1. PUBLIC ACCESS - Получить все vinyl (без авторизации)
+GET {{baseUrl}}/vinyls
+
+### 2. PUBLIC ACCESS - Получить vinyl с пагинацией
+GET {{baseUrl}}/vinyls?page=1&limit=5
+
+### 3. PUBLIC ACCESS - Вторая страница
+GET {{baseUrl}}/vinyls?page=2&limit=5
+
+### 4. PUBLIC ACCESS - Поиск по имени
+GET {{baseUrl}}/vinyls?search=Abbey&page=1&limit=10
+
+### 5. PUBLIC ACCESS - Поиск по автору
+GET {{baseUrl}}/vinyls?search=Nirvana&page=1&limit=10
+
+### 6. PUBLIC ACCESS - Поиск по частичному совпадению
+GET {{baseUrl}}/vinyls?search=the&page=1&limit=10
+
+### 7. PUBLIC ACCESS - Сортировка по цене (возрастание)
+GET {{baseUrl}}/vinyls?sortBy=price&order=ASC&page=1&limit=10
+
+### 8. PUBLIC ACCESS - Сортировка по цене (убывание)
+GET {{baseUrl}}/vinyls?sortBy=price&order=DESC&page=1&limit=10
+
+### 9. PUBLIC ACCESS - Сортировка по имени
+GET {{baseUrl}}/vinyls?sortBy=name&order=ASC&page=1&limit=10
+
+### 10. PUBLIC ACCESS - Сортировка по автору
+GET {{baseUrl}}/vinyls?sortBy=authorName&order=ASC&page=1&limit=10
+
+### 11. PUBLIC ACCESS - Комбинация: поиск + сортировка + пагинация
+GET {{baseUrl}}/vinyls?search=dark&sortBy=price&order=DESC&page=1&limit=5
+
+### 12. PUBLIC ACCESS - Получить один vinyl (нужно указать существующий ID)
+GET {{baseUrl}}/vinyls/{{vinylId}}
+
+### ============================================
+### ADMIN ONLY - Требуют авторизацию и роль ADMIN
+### ============================================
+GET  {{baseUrl}}/auth/profile
+Authorization: Bearer {{accessToken}}
+
+### Обновить токен после изменения роли
+POST {{baseUrl}}/auth/refresh
+Authorization: Bearer {{refresh_token}}
+
+### 13. ADMIN - Создать новый vinyl (нужен токен админа)
+POST {{baseUrl}}/vinyls
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "name": "Abbey Road",
+    "authorName": "The Beatles",
+    "description": "The eleventh studio album by the English rock band the Beatles, released in 1969.",
+    "price": 29.99,
+    "imageUrl": "https://example.com/abbey-road.jpg",
+    "stock": 50
+}
+
+### 14. ADMIN - Создать vinyl с минимальными полями
+POST {{baseUrl}}/vinyls
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "name": "Thriller",
+    "authorName": "Michael Jackson",
+    "price": 25.99,
+    "stock": 100
+}
+
+### 15. ADMIN - Создать еще один vinyl
+POST {{baseUrl}}/vinyls
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "name": "The Dark Side of the Moon",
+    "authorName": "Pink Floyd",
+    "description": "The eighth studio album by the English rock band Pink Floyd",
+    "price": 34.99,
+    "imageUrl": "https://example.com/dark-side.jpg",
+    "stock": 30
+}
+
+### 16. ADMIN - Создать vinyl без stock (будет default 0)
+POST {{baseUrl}}/vinyls
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "name": "Nevermind",
+    "authorName": "Nirvana",
+    "description": "Second studio album by Nirvana",
+    "price": 27.99
+}
+
+### 17. ADMIN - Обновить vinyl (изменить цену и количество)
+PATCH {{baseUrl}}/vinyls/{{vinylId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "price": 55.99,
+    "stock": 45
+}
+
+### 18. ADMIN - Обновить vinyl (изменить описание)
+PATCH {{baseUrl}}/vinyls/{{vinylId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "description": "Updated description with more details about this amazing vinyl"
+}
+
+### 19. ADMIN - Обновить vinyl (изменить изображение)
+PATCH {{baseUrl}}/vinyls/{{vinylId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "imageUrl": "https://example.com/new-image.jpg"
+}
+
+### 20. ADMIN - Частичное обновление (только имя)
+PATCH {{baseUrl}}/vinyls/{{1021o02102010021}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "name": "Updated Album Name"
+}
+
+### 21. ADMIN - Удалить vinyl
+DELETE {{baseUrl}}/vinyls/{{vinylId}}
+Authorization: Bearer {{accessToken}}
+
+### ============================================
+### ERROR HANDLING TESTS
+### ============================================
+
+### 22. ERROR - Попытка создать vinyl без авторизации
+POST {{baseUrl}}/vinyls
+Content-Type: application/json
+
+{
+    "name": "Test",
+    "authorName": "Test",
+    "price": 10
+}
+
+### 23. ERROR - Попытка обновить vinyl без авторизации
+PATCH {{baseUrl}}/vinyls/{{vinylId}}
+Content-Type: application/json
+
+{
+    "price": 20
+}
+
+### 24. ERROR - Попытка удалить vinyl без авторизации
+DELETE {{baseUrl}}/vinyls/{{vinylId}}
+
+### 25. ERROR - Создать vinyl с отрицательной ценой
+POST {{baseUrl}}/vinyls
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "name": "Invalid Vinyl",
+    "authorName": "Invalid Author",
+    "price": -10,
+    "stock": 10
+}
+
+### 26. ERROR - Создать vinyl без обязательных полей (name)
+POST {{baseUrl}}/vinyls
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "authorName": "Some Author",
+    "price": 20
+}
+
+### 27. ERROR - Создать vinyl без обязательных полей (authorName)
+POST {{baseUrl}}/vinyls
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "name": "Some Name",
+    "price": 20
+}
+
+### 28. ERROR - Получить несуществующий vinyl
+GET {{baseUrl}}/vinyls/00000000-0000-0000-0000-000000000000
+
+### 29. ERROR - Обновить несуществующий vinyl
+PATCH {{baseUrl}}/vinyls/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "price": 30
+}
+
+### 30. ERROR - Удалить несуществующий vinyl
+DELETE {{baseUrl}}/vinyls/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{accessToken}}
+
+### ============================================
+### EDGE CASES TESTS
+### ============================================
+
+### 31. EDGE - Пагинация с отрицательной страницей (должна стать 1)
+GET {{baseUrl}}/vinyls?page=-1&limit=10
+
+### 32. EDGE - Пагинация с отрицательным лимитом (должен стать 1)
+GET {{baseUrl}}/vinyls?page=1&limit=-5
+
+### 33. EDGE - Пагинация с очень большим лимитом
+GET {{baseUrl}}/vinyls?page=1&limit=1000
+
+### 34. EDGE - Пагинация с несуществующей страницей
+GET {{baseUrl}}/vinyls?page=999&limit=10
+
+### 35. EDGE - Поиск с пустой строкой
+GET {{baseUrl}}/vinyls?search=&page=1&limit=10
+
+### 36. EDGE - Поиск с очень длинной строкой
+GET {{baseUrl}}/vinyls?search=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&page=1&limit=10
+
+### 37. EDGE - Сортировка с невалидным полем (использует createdAt по умолчанию)
+GET {{baseUrl}}/vinyls?sortBy=invalid&order=ASC&page=1&limit=10
+
+### 38. EDGE - Сортировка с невалидным порядком (использует ASC по умолчанию)
+GET {{baseUrl}}/vinyls?sortBy=price&order=INVALID&page=1&limit=10
