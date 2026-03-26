@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Brackets } from 'typeorm';
 import { Vinyl } from './entities/vinyl.entity';
@@ -160,5 +164,35 @@ export class VinylService {
         const vinyl = await this.findOne(id);
         await this.vinylRepo.remove(vinyl);
         return { message: 'Deleted successfully' };
+    }
+
+    async decreaseStock(vinylId: string, quantity: number): Promise<Vinyl> {
+        const vinyl = await this.findOne(vinylId);
+        if (!vinyl) throw new BadRequestException('Vinyl not found');
+        if (vinyl.stock < quantity)
+            throw new BadRequestException(
+                `Not enough stock. Available: ${vinyl.stock}, Requested: ${quantity}`
+            );
+
+        vinyl.stock -= quantity;
+
+        if (vinyl.stock === 0) {
+            vinyl.isAvailable = false;
+        }
+        await this.vinylRepo.save(vinyl);
+        return vinyl;
+    }
+
+    async increaseStock(vinylId: string, quantity: number): Promise<Vinyl> {
+        const vinyl = await this.findOne(vinylId);
+        if (!vinyl) {
+            throw new BadRequestException('Vinyl not found');
+        }
+        vinyl.stock += quantity;
+        if (!vinyl.isAvailable && vinyl.stock > 0) {
+            vinyl.isAvailable = true;
+        }
+        await this.vinylRepo.save(vinyl);
+        return vinyl;
     }
 }

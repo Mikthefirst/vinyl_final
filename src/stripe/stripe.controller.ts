@@ -1,37 +1,25 @@
-import { Controller, Post, Body, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { StripeService } from './stripe.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CreatePaymentDto } from './dto/create-payment.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import * as interfaces from 'src/auth/interfaces/interfaces';
 
 @Controller('stripe')
 export class StripeController {
     constructor(private readonly stripeService: StripeService) {}
 
     @UseGuards(JwtAuthGuard)
-    @Post('create-payment-intent')
+    @Post('create-payment')
     async createPaymentIntent(
-        @Body() body: { amount: number; currency?: string }
+        @Body() body: CreatePaymentDto,
+        @Req() req: interfaces.RequestWithJwtUser
     ) {
-        return this.stripeService.createPaymentIntent(
-            body.amount,
-            body.currency || 'usd'
+        const session = await this.stripeService.createCheckoutSession(
+            body,
+            req.user.userId
         );
-    }
-
-    @UseGuards(JwtAuthGuard)
-    @Post('confirm-payment/:paymentIntentId')
-    async confirmPayment(@Param('paymentIntentId') paymentIntentId: string) {
-        return this.stripeService.confirmPayment(paymentIntentId);
-    }
-
-    @UseGuards(JwtAuthGuard)
-    @Get('payment-intent/:paymentIntentId')
-    async getPaymentIntent(@Param('paymentIntentId') paymentIntentId: string) {
-        return this.stripeService.getPaymentIntent(paymentIntentId);
-    }
-
-    @UseGuards(JwtAuthGuard)
-    @Post('create-customer')
-    async createCustomer(@Body() body: { email: string; name?: string }) {
-        return this.stripeService.createCustomer(body.email, body.name);
+        return {
+            checkoutUrl: session.url
+        };
     }
 }

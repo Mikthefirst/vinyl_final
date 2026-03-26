@@ -13,6 +13,8 @@ import { Vinyl } from './vinyls/entities/vinyl.entity';
 import { ReviewsModule } from './reviews/reviews.module';
 import { Review } from './reviews/entities/review.entity';
 import { ProfileModule } from './profile/profile.module';
+import { PurchaseModule } from './purchase/purchase.module';
+import { Purchase } from './purchase/entities/purchase.entity';
 
 @Module({
     imports: [
@@ -29,7 +31,7 @@ import { ProfileModule } from './profile/profile.module';
                 username: configService.get('POSTGRES_USER'),
                 password: configService.get('POSTGRES_PASSWORD'),
                 database: configService.get('POSTGRES_DB'),
-                entities: [User, Vinyl, Review],
+                entities: [User, Vinyl, Review, Purchase],
                 synchronize: true,
                 logging: true,
                 maxQueryExecutionTime: 100
@@ -42,7 +44,8 @@ import { ProfileModule } from './profile/profile.module';
         StripeModule,
         VinylsModule,
         ReviewsModule,
-        ProfileModule
+        ProfileModule,
+        PurchaseModule
     ]
 })
 export class AppModule {}

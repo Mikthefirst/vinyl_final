@@ -13,6 +13,7 @@ import { ReviewsModule } from 'src/reviews/reviews.module';
         TypeOrmModule.forFeature([Vinyl, Review])
     ],
     controllers: [VinylController],
-    providers: [VinylService]
+    providers: [VinylService],
+    exports: [VinylService]
 })
 export class VinylsModule {}

@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
+import { CreatePaymentDto } from './dto/create-payment.dto';
 
 @Injectable()
 export class StripeService {
@@ -16,83 +17,57 @@ export class StripeService {
         this.stripe = new Stripe(secretKey);
     }
 
-    async createPaymentIntent(amount: number, currency: string = 'usd') {
+    async createCheckoutSession(
+        createStripeDto: CreatePaymentDto,
+        userId: string
+    ) {
         try {
-            const paymentIntent = await this.stripe.paymentIntents.create({
-                amount: amount * 100, // Stripe работает с копейками/центами
-                currency,
-                automatic_payment_methods: {
-                    enabled: true
-                }
-            });
+            const successUrl = `http://localhost:3000/purchase/success?userId=${encodeURIComponent(
+                userId
+            )}&vinyl_id=${encodeURIComponent(
+                createStripeDto.vinyl_id
+            )}&quantity=${encodeURIComponent(createStripeDto.quantity)}&session_id={CHECKOUT_SESSION_ID}`;
 
-            return {
-                clientSecret: paymentIntent.client_secret,
-                paymentIntentId: paymentIntent.id,
-                amount: paymentIntent.amount,
-                currency: paymentIntent.currency
-            };
-        } catch (error) {
-            console.error('Stripe error:', error);
-            throw error;
-        }
-    }
+            const cancelUrl = `http://localhost:3000/purchase/cancel?userId=${encodeURIComponent(
+                userId
+            )}&vinyl_id=${encodeURIComponent(
+                createStripeDto.vinyl_id
+            )}&quantity=${encodeURIComponent(createStripeDto.quantity)}&session_id={CHECKOUT_SESSION_ID}`;
 
-    async confirmPayment(paymentIntentId: string) {
-        try {
-            const paymentIntent =
-                await this.stripe.paymentIntents.confirm(paymentIntentId);
-            return {
-                id: paymentIntent.id,
-                status: paymentIntent.status,
-                clientSecret: paymentIntent.client_secret
-            };
-        } catch (error) {
-            console.error('Stripe confirm error:', error);
-            throw error;
-        }
-    }
-
-    async getPaymentIntent(paymentIntentId: string) {
-        try {
-            return await this.stripe.paymentIntents.retrieve(paymentIntentId);
-        } catch (error) {
-            console.error('Stripe retrieve error:', error);
-            throw error;
-        }
-    }
-
-    async createCustomer(email: string, name?: string) {
-        try {
-            const customer = await this.stripe.customers.create({
-                email,
-                name
-            });
-            return customer;
-        } catch (error) {
-            console.error('Stripe create customer error:', error);
-            throw error;
-        }
-    }
-
-    async createCheckoutSession(priceId: string, customerId?: string) {
-        try {
             const session = await this.stripe.checkout.sessions.create({
-                mode: 'payment',
+                payment_method_types: ['card'],
                 line_items: [
                     {
-                        price: priceId,
-                        quantity: 1
+                        price_data: {
+                            currency: createStripeDto.currency,
+                            product_data: {
+                                name: createStripeDto.vinyl_name
+                            },
+                            unit_amount: Number(createStripeDto.amount) * 100
+                        },
+                        quantity: createStripeDto.quantity
                     }
                 ],
-                customer: customerId,
-                success_url: 'http://localhost:3000/success',
-                cancel_url: 'http://localhost:3000/cancel'
+                mode: 'payment',
+                success_url: successUrl,
+                cancel_url: cancelUrl
             });
+
             return session;
-        } catch (error) {
-            console.error('Stripe create checkout session error:', error);
-            throw error;
+        } catch {
+            throw new BadRequestException('Failed to create payment session');
+        }
+    }
+
+    async getCheckoutSession(
+        sessionId: string
+    ): Promise<Stripe.Checkout.Session> {
+        try {
+            const session =
+                await this.stripe.checkout.sessions.retrieve(sessionId);
+            return session;
+        } catch {
+            throw new BadRequestException('Failed to retrieve payment session');
         }
     }
 }
