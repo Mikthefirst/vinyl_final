@@ -12,6 +12,7 @@ import { VinylsModule } from './vinyls/vinyls.module';
 import { Vinyl } from './vinyls/entities/vinyl.entity';
 import { ReviewsModule } from './reviews/reviews.module';
 import { Review } from './reviews/entities/review.entity';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
     imports: [
@@ -40,7 +41,8 @@ import { Review } from './reviews/entities/review.entity';
         RefreshJwtModule,
         StripeModule,
         VinylsModule,
-        ReviewsModule
+        ReviewsModule,
+        ProfileModule
     ]
 })
 export class AppModule {}
