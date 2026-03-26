@@ -1,5 +1,47 @@
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { UserRole } from '../../auth/enums/role.enum';
+
+export class ReviewInProfileDto {
+    @Expose()
+    id: string;
+
+    @Expose()
+    score: number;
+
+    @Expose()
+    comment: string;
+
+    @Expose()
+    @Type(() => Date)
+    createdAt: Date;
+}
+
+export class PurchaseInProfileDto {
+    @Expose()
+    id: string;
+
+    @Expose()
+    vinylId: string;
+
+    @Expose()
+    vinylName: string;
+
+    @Expose()
+    vinylAuthorName: string;
+
+    @Expose()
+    vinylImageUrl: string;
+
+    @Expose()
+    amount: number;
+
+    @Expose()
+    currency: string;
+
+    @Expose()
+    @Type(() => Date)
+    purchasedAt: Date;
+}
 
 export class ProfileResponseDto {
     @Expose()
@@ -28,4 +70,12 @@ export class ProfileResponseDto {
 
     @Expose()
     last_login_at?: Date;
+
+    @Expose()
+    @Type(() => ReviewInProfileDto)
+    reviews: ReviewInProfileDto[];
+
+    @Expose()
+    @Type(() => PurchaseInProfileDto)
+    purchases: PurchaseInProfileDto[];
 }

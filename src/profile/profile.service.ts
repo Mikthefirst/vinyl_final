@@ -3,9 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/entity/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ProfileResponseDto } from './dto/profile-responce.dto';
+import {
+    ProfileResponseDto,
+    PurchaseInProfileDto,
+    ReviewInProfileDto
+} from './dto/profile-responce.dto';
 import { plainToInstance } from 'class-transformer';
 import { Review } from 'src/reviews/entities/review.entity';
+import { Purchase } from 'src/purchase/entities/purchase.entity';
 
 export interface ReviewStats {
     totalReviews: string;
@@ -18,19 +23,58 @@ export class ProfileService {
         @InjectRepository(User)
         private userRepo: Repository<User>,
         @InjectRepository(Review)
-        private reviewRepo: Repository<Review>
+        private reviewRepo: Repository<Review>,
+        @InjectRepository(Purchase)
+        private purchaseRepo: Repository<Purchase>
     ) {}
 
     async getProfile(userId: string): Promise<ProfileResponseDto> {
         const user = await this.userRepo.findOne({ where: { id: userId } });
 
-        if (!user) {
-            throw new NotFoundException('User not found');
-        }
+        if (!user) throw new NotFoundException('User not found');
 
-        return plainToInstance(ProfileResponseDto, user, {
+        const reviews = await this.reviewRepo.find({
+            where: { userId },
+            order: { createdAt: 'DESC' }
+        });
+
+        // Получаем покупки пользователя с информацией о винилах
+        const purchases = await this.purchaseRepo.find({
+            where: { userId, status: 'succeeded' },
+            relations: ['vinyl'],
+            order: { createdAt: 'DESC' }
+        });
+
+        const reviewsDto: ReviewInProfileDto[] = reviews.map((review) => ({
+            id: review.id,
+            score: review.score,
+            comment: review.comment,
+            createdAt: review.createdAt
+        }));
+
+        // Формируем DTO для покупок
+        const purchasesDto: PurchaseInProfileDto[] = purchases.map(
+            (purchase) => ({
+                id: purchase.id,
+                vinylId: purchase.vinyl.id,
+                vinylName: purchase.vinyl.name,
+                vinylAuthorName: purchase.vinyl.authorName,
+                vinylImageUrl: purchase.vinyl.imageUrl,
+                amount: purchase.amount,
+                currency: purchase.currency,
+                purchasedAt: purchase.createdAt
+            })
+        );
+
+        const profile = plainToInstance(ProfileResponseDto, user, {
             excludeExtraneousValues: true
         });
+
+        return {
+            ...profile,
+            reviews: reviewsDto,
+            purchases: purchasesDto
+        };
     }
 
     async updateProfile(
@@ -70,7 +114,6 @@ export class ProfileService {
             throw new NotFoundException('User not found');
         }
 
-        // Получаем статистику отзывов отдельным запросом
         const reviewsStats = await this.reviewRepo
             .createQueryBuilder('review')
             .select('COUNT(review.id)', 'totalReviews')
@@ -81,8 +124,9 @@ export class ProfileService {
         const totalReviews = Number(reviewsStats?.totalReviews) || 0;
         const averageScore = Number(reviewsStats?.averageScore) || 0;
 
-        // Покупки пока нет, ставим 0
-        const totalPurchases = 0;
+        const totalPurchases = await this.purchaseRepo.count({
+            where: { userId, status: 'succeeded' }
+        });
 
         return {
             totalReviews,
