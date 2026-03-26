@@ -34,7 +34,11 @@ import { Purchase } from './purchase/entities/purchase.entity';
                 entities: [User, Vinyl, Review, Purchase],
                 synchronize: true,
                 logging: true,
-                maxQueryExecutionTime: 100
+                maxQueryExecutionTime: 100,
+                ssl:
+                    process.env.NODE_ENV === 'production'
+                        ? { rejectUnauthorized: false }
+                        : false
             }),
             inject: [ConfigService]
         }),
