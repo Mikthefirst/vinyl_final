@@ -10,6 +10,8 @@ import { RefreshJwtModule } from './refresh-jwt/refresh-jwt.module';
 import { StripeModule } from './stripe/stripe.module';
 import { VinylsModule } from './vinyls/vinyls.module';
 import { Vinyl } from './vinyls/entities/vinyl.entity';
+import { ReviewsModule } from './reviews/reviews.module';
+import { Review } from './reviews/entities/review.entity';
 
 @Module({
     imports: [
@@ -26,7 +28,7 @@ import { Vinyl } from './vinyls/entities/vinyl.entity';
                 username: configService.get('POSTGRES_USER'),
                 password: configService.get('POSTGRES_PASSWORD'),
                 database: configService.get('POSTGRES_DB'),
-                entities: [User, Vinyl],
+                entities: [User, Vinyl, Review],
                 synchronize: true,
                 logging: true,
                 maxQueryExecutionTime: 100
@@ -37,7 +39,8 @@ import { Vinyl } from './vinyls/entities/vinyl.entity';
         AuthModule,
         RefreshJwtModule,
         StripeModule,
-        VinylsModule
+        VinylsModule,
+        ReviewsModule
     ]
 })
 export class AppModule {}

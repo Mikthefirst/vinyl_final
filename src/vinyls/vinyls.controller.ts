@@ -9,7 +9,8 @@ import {
     Query,
     UseGuards,
     ParseUUIDPipe,
-    BadRequestException
+    BadRequestException,
+    Req
 } from '@nestjs/common';
 import { VinylService } from './vinyls.service';
 import { CreateVinylDto } from './dto/create-vinyl.dto';
@@ -20,6 +21,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/role.decorator';
 import { UserRole } from '../auth/enums/role.enum';
 import { RolesGuard } from 'src/auth/guards/roles/roles.guard';
+import * as interfaces from 'src/auth//interfaces/interfaces';
+import { QueryReviewsDto } from 'src/reviews/dto/query-reviews.dto';
 
 @Controller('vinyls')
 export class VinylController {
@@ -28,6 +31,23 @@ export class VinylController {
     @Get()
     findAll(@Query() query: GetVinylsQueryDto) {
         return this.vinylService.findAll(query);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('me')
+    findAllForAuth(
+        @Query() query: GetVinylsQueryDto,
+        @Req() req: interfaces.RequestWithJwtUser
+    ) {
+        return this.vinylService.findAll(query, req.user.userId);
+    }
+
+    @Get('vinyl/:id/reviews')
+    getVinylReviews(
+        @Param('id', ParseUUIDPipe) vinylId: string,
+        @Query() query: QueryReviewsDto
+    ) {
+        return this.vinylService.getVinylReviews(vinylId, query);
     }
 
     @Get(':id')

@@ -1,7 +1,9 @@
+import { Review } from 'src/reviews/entities/review.entity';
 import {
     Column,
     CreateDateColumn,
     Entity,
+    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from 'typeorm';
@@ -32,11 +34,18 @@ export class Vinyl {
     @Column({ name: 'is_available', default: true })
     isAvailable: boolean;
 
+    // Связь с отзывами
+    @OneToMany(() => Review, (review) => review.vinyl)
+    reviews: Review[];
+
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 
     @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
+
+    averageScore?: number;
+    firstReview?: any;
 }
 
 //add review later

@@ -101,7 +101,8 @@ export class UsersService {
         profileDto.birthdate = user.birthdate;
         profileDto.avatar_url = user.avatar_url || null;
         profileDto.created_at = user.created_at;
-
+        profileDto.id = user.id;
+        profileDto.role = user.role;
         return profileDto;
     }
 }

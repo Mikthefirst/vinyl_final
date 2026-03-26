@@ -38,16 +38,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
     //записываем в req.user JwtPayload
     async validate(payload: JwtPayload): Promise<JwtPayloadFinal> {
+        console.log('JwtStrategy payload:', payload); // 👈 Добавьте лог
         const user = await this.authService.validateUserByID(payload.sub);
 
         if (!user) throw new UnauthorizedException('User no longer exists');
 
-        return {
+        const result = {
             userId: payload.sub,
             email: payload.email,
             role: this.mapToUserRole(payload.role),
             firstName: user.first_name,
             lastName: user.last_name
         };
+        console.log('JwtStrategy.validate returning:', result);
+        return result;
     }
 }
