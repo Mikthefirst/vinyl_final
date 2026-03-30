@@ -15,5 +15,9 @@ export default new DataSource({
     entities: [],
 
     migrations: [SeedVinyls1743000000000],
-    synchronize: false
+    synchronize: false,
+    ssl:
+        process.env.NODE_ENV === 'production'
+            ? { rejectUnauthorized: false }
+            : false
 });
