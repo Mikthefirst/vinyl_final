@@ -84,13 +84,26 @@ export class PurchaseService {
         if (!user) throw new BadRequestException('User not found');
 
         const userText = `Your payment for "${vinyl.name}" has been successfully processed.\n\nPurchase Details:\n- Vinyl: ${vinyl.name} by ${vinyl.authorName}\n- Quantity: ${quantity}\n- Amount: ${purchase.amount} ${purchase.currency.toUpperCase()}\n\nThank you for your purchase!\n\n`;
-
-        await sendProfileUpdateMail(
-            user.email,
-            'Payment Successful - Vinyl Purchase Confirmation',
-            userText
-        );
-
+        try {
+            await sendProfileUpdateMail(
+                user.email,
+                'Payment Successful - Vinyl Purchase Confirmation',
+                userText
+            );
+            console.log(`Confirmation email sent to ${user.email}`);
+        } catch (mailError: unknown) {
+            if (mailError instanceof Error) {
+                console.error(
+                    'CRITICAL: Purchase saved, but email failed:',
+                    mailError.message
+                );
+            } else {
+                console.error(
+                    'CRITICAL: Purchase saved, but email failed with unknown error:',
+                    mailError
+                );
+            }
+        }
         const savedPurchase = await this.purchasesRepository.save(purchase);
         return savedPurchase;
     }
