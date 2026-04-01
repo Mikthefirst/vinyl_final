@@ -20,6 +20,19 @@ export class UsersController {
         return this.usersService.findAll();
     }
 
+    @Post('make-admin')
+    @ApiOperation({ summary: 'Make user admin by email' })
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                email: { type: 'string', example: 'test@gmail.com' }
+            }
+        }
+    })
+    async makeAdmin(@Body('email') email: string): Promise<UserProfileDto> {
+        return this.usersService.makeAdminByEmail(email);
+    }
     @Post()
     @ApiOperation({ summary: 'Create new user' })
     @ApiBody({ type: CreateUserDto })

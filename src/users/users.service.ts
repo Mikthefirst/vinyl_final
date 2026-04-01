@@ -73,6 +73,29 @@ export class UsersService {
         return this.userRepo.findOneBy({ id: id });
     }
 
+    async makeAdminByEmail(email: string): Promise<UserProfileDto> {
+        const user = await this.findOneByEmail(email);
+
+        if (!user) {
+            throw new BadRequestException('User not found');
+        }
+
+        if (user.role === UserRole.ADMIN) {
+            throw new BadRequestException('User is already admin');
+        }
+
+        await this.userRepo.update(user.id, {
+            role: UserRole.ADMIN
+        });
+
+        const updatedUser = await this.findOneByID(user.id);
+        if (!updatedUser) {
+            throw new Error('User not found after update');
+        }
+
+        return this.toUserProfileDto(updatedUser);
+    }
+
     async updateRefreshToken(
         email: string,
         hashed_refresh_token: string
