@@ -9,6 +9,12 @@ import nodemailer from 'nodemailer';
 const GMAIL_PASS = process.env.GMAIL_PASS;
 const EMAIL = process.env.EMAIL;
 
+if (!GMAIL_PASS || !EMAIL) {
+    console.error(
+        'Missing environment variables: GMAIL_PASS and EMAIL are required'
+    );
+}
+
 let transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
